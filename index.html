@@ -1,0 +1,406 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ग्राम बाजार - Online Shopping</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #f4f7f2;
+  color: #222;
+}
+
+header {
+  background: #168044;
+  color: white;
+  padding: 18px 12px;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 30px;
+}
+
+header p {
+  margin-top: 6px;
+}
+
+.search {
+  display: flex;
+  gap: 8px;
+  padding: 15px;
+  background: white;
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.hero {
+  background: #dff5df;
+  text-align: center;
+  padding: 25px 12px;
+  color: #176c32;
+}
+
+.hero h2 {
+  margin-bottom: 10px;
+}
+
+.categories {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 15px;
+  background: white;
+}
+
+.categories button {
+  white-space: nowrap;
+  border: none;
+  background: #e0f2e4;
+  padding: 10px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+h2.section-title {
+  padding: 18px 15px 5px;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 15px;
+}
+
+.product {
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 2px 7px #00000012;
+}
+
+.product .emoji {
+  font-size: 48px;
+  padding: 12px;
+}
+
+.product h3 {
+  font-size: 17px;
+  margin: 7px 0;
+}
+
+.product p {
+  color: #168044;
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+button.add, .order-btn {
+  background: #168044;
+  color: white;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  border-radius: 7px;
+  cursor: pointer;
+  margin-top: 7px;
+}
+
+.cart, .order {
+  background: white;
+  padding: 18px;
+  margin: 15px;
+  border-radius: 12px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.cart-item button {
+  padding: 4px 8px;
+}
+
+.order input, .order textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 7px 0;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  font-size: 15px;
+}
+
+footer {
+  background: #145c31;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.empty {
+  color: #777;
+  padding: 10px 0;
+}
+
+@media (min-width: 700px) {
+  .products {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🌾 ग्राम बाजार</h1>
+  <p>आपके गाँव का अपना ऑनलाइन बाजार</p>
+  <p>घर बैठे खरीदें, घर पर सामान पाएँ!</p>
+</header>
+
+<div class="search">
+  <input id="searchInput" type="search"
+    placeholder="सामान खोजें... जैसे चावल, तेल"
+    oninput="renderProducts()">
+</div>
+
+<section class="hero">
+  <h2>गाँव की हर जरूरत, एक ही जगह!</h2>
+  <p>किराना • सब्जियाँ • कपड़े • खेती का सामान</p>
+</section>
+
+<div class="categories">
+  <button onclick="setCategory('सभी')">सभी सामान</button>
+  <button onclick="setCategory('किराना')">🛒 किराना</button>
+  <button onclick="setCategory('सब्जियाँ')">🥦 सब्जियाँ</button>
+  <button onclick="setCategory('कपड़े')">👕 कपड़े</button>
+  <button onclick="setCategory('इलेक्ट्रॉनिक्स')">📱 इलेक्ट्रॉनिक्स</button>
+  <button onclick="setCategory('खेती')">🌱 खेती</button>
+  <button onclick="setCategory('घर')">🏠 घर का सामान</button>
+</div>
+
+<h2 class="section-title">🛍️ हमारे उत्पाद</h2>
+<div class="products" id="products"></div>
+
+<section class="cart" id="cart">
+  <h2>🛒 आपकी खरीदारी</h2>
+  <div id="cartItems" class="empty">अभी कार्ट खाली है।</div>
+  <h3>कुल राशि: ₹<span id="total">0</span></h3>
+</section>
+
+<section class="order">
+  <h2>📦 ऑर्डर करें</h2>
+  <p>अपना सामान घर मँगाने के लिए विवरण भरें।</p>
+
+  <form id="orderForm">
+    <input id="customerName" placeholder="आपका पूरा नाम" required>
+    <input id="phone" type="tel" inputmode="numeric"
+      pattern="[0-9]{10}" maxlength="10"
+      placeholder="10 अंकों का मोबाइल नंबर" required>
+    <input id="village" placeholder="गाँव का नाम" required>
+    <input id="pincode" inputmode="numeric"
+      pattern="[0-9]{6}" maxlength="6"
+      placeholder="6 अंकों का पिन कोड" required>
+    <textarea id="address" placeholder="घर का पूरा पता" required></textarea>
+
+    <label for="payment">भुगतान का तरीका चुनें:</label>
+    <select id="payment" style="width:100%;padding:12px;margin:8px 0">
+      <option value="Cash on Delivery">कैश ऑन डिलीवरी (COD)</option>
+      <option value="UPI (भुगतान सेटअप आवश्यक)">UPI (भुगतान सेटअप आवश्यक)</option>
+    </select>
+
+    <button class="order-btn" type="submit">ऑर्डर की जानकारी तैयार करें</button>
+  </form>
+
+  <div id="orderResult"></div>
+</section>
+
+<footer>
+  <h3>🌾 ग्राम बाजार</h3>
+  <p>गाँव का बाजार, अब आपके मोबाइल पर!</p>
+  <p>© 2026 Gram Bazar</p>
+</footer>
+
+<script>
+const productsList = [
+  {id:1, name:"चावल", price:60, category:"किराना", emoji:"🍚"},
+  {id:2, name:"गेहूँ का आटा", price:40, category:"किराना", emoji:"🌾"},
+  {id:3, name:"अरहर दाल", price:120, category:"किराना", emoji:"🫘"},
+  {id:4, name:"खाने का तेल", price:150, category:"किराना", emoji:"🫗"},
+  {id:5, name:"आलू", price:30, category:"सब्जियाँ", emoji:"🥔"},
+  {id:6, name:"टमाटर", price:40, category:"सब्जियाँ", emoji:"🍅"},
+  {id:7, name:"केला", price:50, category:"सब्जियाँ", emoji:"🍌"},
+  {id:8, name:"टी-शर्ट", price:299, category:"कपड़े", emoji:"👕"},
+  {id:9, name:"जूते", price:599, category:"कपड़े", emoji:"👟"},
+  {id:10, name:"मोबाइल चार्जर", price:199, category:"इलेक्ट्रॉनिक्स", emoji:"🔌"},
+  {id:11, name:"ईयरफोन", price:249, category:"इलेक्ट्रॉनिक्स", emoji:"🎧"},
+  {id:12, name:"खेती के बीज", price:100, category:"खेती", emoji:"🌱"},
+  {id:13, name:"कुदाल", price:250, category:"खेती", emoji:"🛠️"},
+  {id:14, name:"स्टील की थाली", price:100, category:"घर", emoji:"🍽️"},
+  {id:15, name:"सफाई का सामान", price:80, category:"घर", emoji:"🧹"}
+];
+
+let cart = [];
+let selectedCategory = "सभी";
+
+function setCategory(category) {
+  selectedCategory = category;
+  renderProducts();
+}
+
+function renderProducts() {
+  const query = document.getElementById("searchInput")
+    .value.trim().toLowerCase();
+
+  const filtered = productsList.filter(p =>
+    (selectedCategory === "सभी" || p.category === selectedCategory) &&
+    p.name.toLowerCase().includes(query)
+  );
+
+  document.getElementById("products").innerHTML =
+    filtered.length ? filtered.map(p => `
+      <div class="product">
+        <div class="emoji">${p.emoji}</div>
+        <h3>${p.name}</h3>
+        <p>₹${p.price} (डेमो कीमत)</p>
+        <button class="add" onclick="addToCart(${p.id})">
+          कार्ट में जोड़ें
+        </button>
+      </div>
+    `).join("") : "<p>यह सामान नहीं मिला।</p>";
+}
+
+function addToCart(id) {
+  const product = productsList.find(p => p.id === id);
+  const item = cart.find(p => p.id === id);
+
+  if (item) {
+    item.qty++;
+  } else {
+    cart.push({...product, qty:1});
+  }
+  renderCart();
+}
+
+function changeQty(id, change) {
+  const item = cart.find(p => p.id === id);
+  if (!item) return;
+
+  item.qty += change;
+  if (item.qty <= 0) {
+    cart = cart.filter(p => p.id !== id);
+  }
+  renderCart();
+}
+
+function renderCart() {
+  const container = document.getElementById("cartItems");
+
+  if (!cart.length) {
+    container.innerHTML = "अभी कार्ट खाली है।";
+    container.className = "empty";
+  } else {
+    container.className = "";
+    container.innerHTML = cart.map(p => `
+      <div class="cart-item">
+        <span>${p.name} × ${p.qty}</span>
+        <span>
+          ₹${p.price * p.qty}
+          <button type="button" onclick="changeQty(${p.id}, -1)">−</button>
+          <button type="button" onclick="changeQty(${p.id}, 1)">+</button>
+        </span>
+      </div>
+    `).join("");
+  }
+
+  document.getElementById("total").textContent =
+    cart.reduce((sum, p) => sum + p.price * p.qty, 0);
+}
+
+document.getElementById("orderForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  if (!cart.length) {
+    alert("कृपया पहले कार्ट में सामान जोड़ें।");
+    return;
+  }
+
+  const name = document.getElementById("customerName").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const village = document.getElementById("village").value.trim();
+  const pincode = document.getElementById("pincode").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const payment = document.getElementById("payment").value;
+
+  const items = cart.map(p =>
+    `${p.name} x ${p.qty} = ₹${p.price * p.qty}`
+  ).join("\n");
+
+  const total = cart.reduce((sum, p) => sum + p.price * p.qty, 0);
+
+  const message =
+`ग्राम बाजार - ऑर्डर विवरण
+नाम: ${name}
+मोबाइल: ${phone}
+गाँव: ${village}
+पिन कोड: ${pincode}
+पता: ${address}
+
+सामान:
+${items}
+
+कुल राशि: ₹${total}
+भुगतान तरीका: ${payment}
+
+नोट: यह ऑर्डर अनुरोध है, वास्तविक ऑर्डर की पुष्टि नहीं।`;
+
+  const result = document.getElementById("orderResult");
+  result.innerHTML = `
+    <h3 style="margin-top:15px">ऑर्डर का विवरण तैयार है</h3>
+    <p style="margin:10px 0">नीचे दिए बटन से विवरण कॉपी करें। अभी ऑर्डर दुकान तक नहीं भेजा गया है।</p>
+    <button type="button" class="order-btn" id="copyOrder">
+      ऑर्डर विवरण कॉपी करें
+    </button>
+    <pre id="orderText" style="white-space:pre-wrap;overflow-wrap:anywhere;margin-top:12px"></pre>
+  `;
+
+  document.getElementById("orderText").textContent = message;
+  document.getElementById("copyOrder").onclick = async function() {
+    try {
+      await navigator.clipboard.writeText(message);
+      alert("ऑर्डर विवरण कॉपी हो गया।");
+    } catch (err) {
+      alert("नीचे दिए विवरण को दबाकर कॉपी करें।");
+    }
+  };
+});
+
+renderProducts();
+renderCart();
+</script>
+
+</body>
+</html>
